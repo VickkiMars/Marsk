@@ -1,64 +1,48 @@
-import math
+import details
+from alpaca.data.historical import CryptoHistoricalDataClient
+from alpaca.data.requests import CryptoBarsRequest
+from alpaca.data.timeframe import TimeFrame
+from datetime import date
+from dateutil.relativedelta import relativedelta
 import datetime as dt
-import numpy as np
-import pandas as pd
-from tensorflow import keras
-from datetime import datetime, date
+from alpaca.trading.client import TradingClient
 from sklearn.preprocessing import MinMaxScaler
-import matplotlib.pyplot as plt
-plt.style.use('fivethirtyeight')
 
-class stockPred:
-    def __init__(self,
-    key1: str,
-    key2: str,
-    past_days: int = 50,
-    trading_pair: str = 'BTCUSD',
-    exchange: str = 'FTXU',
-    feature: str = 'close',
+past_days = 50
+client = TradingClient(details.KEY_ID, details.SECRET_KEY, paper=True)
 
-    look_back: int = 72,
-    split_perc: int = .8,
+trading_pair = 'ETH/USD'
+today = date.today()
+past = dt.timedelta(days=past_days)
+tast = today-past
 
-    neurons: int = 50,
-    activ_func: str = 'linear',
-    dropout: float = 0.2,
-    loss: str = 'mse',
-    optimizer: str = 'adam',
-    epochs: int = 20,
-    batch_size: int = 32,
-    output_size: int = 1,
+class MarskUtils():
+    def __init__(self, trading_pair):
+        def getAllData():
+            data_client = CryptoHistoricalDataClient()
+            from datetime import datetime
+            time_diff = datetime.now() - relativedelta(hours=1000)
+            print("Getting bar data for {0} starting from {1}".format(trading_pair, time_diff))
+            request_params = CryptoBarsRequest(symbol_or_symbols=[trading_pair], timeframe = TimeFrame.Hour, start=time_diff)
+            df = data_client.get_crypto_bars(request_params).df
+            global current_price
+            current_price = df.iloc[-1]['close']
+            return df
 
-    plot: bool = True,
+        def getFeature(feature, df):
+            data = df.filter([feature])
+            data = data.values
+            return data
 
-    mse_thresh: float = .002,
-    r2_thresh: float = .8
-    ):
-        self.key1 = key1
-        self.key2 = key2
-        self.history = datetime.timedelta(days = past_days)
-        self.trading_pair = trading_pair
-        self.exchange = exchange
-        self.feature = feature
+        def scaleData(data):
+            scaler = MinMaxScaler(Feature_range=(-1,1))
+            scaled_data = scaler.fit_transform(data)
+            return scaled_data, scaler
 
-        self.look_back = look_back
-        self.split_perc = split_perc
 
-        #LSTM Model
-        self.neurons = neurons
-        self.activ_func = activ_func
-        self.dropout = dropout
-        self.loss = loss
-        self.optimizer = optimizer
-        self.epochs = epochs
-        self.batch_size = batch_size
-        self.output_size = output_size
+        def getTrainData(scaled_data):
+            x, y = [], []
+            for price in range(100, len(scaled_data)):
+                x.append(scaled_data[price-100:price])
 
-        self.plot = plot
-
-        # thresholds for model training
-        self.mse_thresh = mse_thresh
-        self.r2_thresh = r2_thresh
-
-    def getAllData(self):
-        data
+        getFeature('close', getAllData())
