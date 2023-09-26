@@ -26,4 +26,23 @@ class MarskStrategy:
             elif data.loc[i, "trend"] == -1:
                 print("Sell at", data.loc[i, "Close"])
 
-        
+    def backtest_tfs(self):
+
+        #Calculate Moving Average
+        data["SMA_short"] = data["Close"].rolling(window=20).mean()
+        data["SMA_long"] = data["Close"].rolling(window=50).mean()
+
+        #Define the strategy
+        data["signal"] = 0
+        data.loc[data["SMA_short"] > data["SMA_long"], "signal"] = 1
+        data.loc[data["SMA_short"] < data["SMA_long"], "signal"] = -1
+
+        # Backtesting
+        data["position"] = data["signal"].shift()
+        data["returns"] = data["position"] * data[price].pct_change()
+
+        # Calculate cumulative returns
+        data["cum_returns"] = (1 + data["returns"]).cumprod()
+
+        #Plot cumulative returns
+        data["cum_returns"].plot()
