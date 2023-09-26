@@ -15,7 +15,7 @@ import pandas as pd
 from sklearn.metrics import mean_absolute_error
 import json
 import logging
-import config
+import details
 import asyncio
 
 
@@ -27,14 +27,14 @@ logger = logging.getLogger(__name__)
 
 # Alpaca Trading Client
 trading_client = TradingClient(
-    config.APCA_API_KEY_ID, config.APCA_API_SECRET_KEY, paper=True)
+    details.KEY_ID, details.SECRET_KEY, paper=True)
 
 
 # Trading variables
 trading_pair = 'ETH/USD'
 qty_to_trade = 5
 # Wait time between each bar request and training model
-waitTime = 600
+waitTime = 300
 data = 0
 
 current_position, current_price = 0, 0
@@ -186,7 +186,7 @@ class stockPred:
 
         # Inverse the scaling to get the actual price
         pred_true = scaler.inverse_transform(pred)
-        print pred_true[0][0]
+        print(pred_true[0][0])
         return pred_true[0][0]
 
 
